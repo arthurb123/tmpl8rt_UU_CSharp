@@ -1,5 +1,5 @@
 # C# Template for ADVGR2023
-This project is an implementation of the [originally provided template](https://github.com/arthurb123/tmpl8rt_UU_CSharp) for the Advanced Graphics
+This project is an implementation of the [originally provided template](https://github.com/jbikker/tmpl8rt_UU) for the Advanced Graphics
 course in 2023/2024 in C# using .NET Core.
 
 ## How to use
