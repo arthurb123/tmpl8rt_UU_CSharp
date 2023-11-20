@@ -10,6 +10,8 @@ using Silk.NET.Vulkan;
 
 namespace tmpl8rt_UU_CSharp {
     public static class Renderer {
+        private static int _degreeOfParallelism = Environment.ProcessorCount;
+
         public static unsafe void RenderScene(Scene scene, Camera camera, void* bufferPtr) {
             // NOTE: This might be useful for later tasks
             // Create observable buffer
@@ -42,13 +44,18 @@ namespace tmpl8rt_UU_CSharp {
             //         observer.OnCompleted();
             //     });
             // });
+
+            // Setup parallel options
+            ParallelOptions options = new ParallelOptions() {
+                MaxDegreeOfParallelism = _degreeOfParallelism
+            };
             
             //Create a ray for each pixel
             float* buffer = (float*)bufferPtr;
-            Parallel.For(0, Camera.HEIGHT, (int y) => {
+            Parallel.For(0, Camera.HEIGHT, options, (int y) => {
                 // Calculate the pointer offset for the current row
                 float* row = buffer + y * Camera.WIDTH * 4;
-                Parallel.For(0, Camera.WIDTH, (int x) => {
+                for (int x = 0; x < Camera.WIDTH; x++) {
                     // Get the primary ray
                     Ray ray = camera.GetPrimaryRay(x, y);
 
@@ -61,7 +68,7 @@ namespace tmpl8rt_UU_CSharp {
                     pixel[1] = color.Y;
                     pixel[2] = color.Z;
                     pixel[3] = color.W;
-                });
+                }
             });
         }
 
