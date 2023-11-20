@@ -16,6 +16,7 @@ namespace tmpl8rt_UU_CSharp {
 
         private SilkIWindow? _window;
         private Scene? _scene;
+        private Shader? _shader;
         private Camera? _camera;
         private unsafe void* _bufferPtr;
 
@@ -26,37 +27,7 @@ namespace tmpl8rt_UU_CSharp {
         private uint _vbo;
         private uint _ebo;
         private uint _vao;
-        private uint _shader;
         private uint _texture;
-
-        //Vertex shaders are run on each vertex.
-        private readonly string _vertexShaderSource = @"
-            #version 330 core
-            
-            layout (location = 0) in vec3 aPosition;
-            layout (location = 1) in vec2 aTexCoords;
-
-            out vec2 frag_texCoords;
-            
-            void main()
-            {
-                gl_Position = vec4(aPosition, 1.0);
-
-                frag_texCoords = aTexCoords;
-            }";
-
-        //Fragment shaders are run on each fragment/pixel of the geometry.
-        private readonly string _fragmentShaderSource = @"
-            #version 330 core
-
-            in vec2 frag_texCoords;
-            out vec4 out_color;
-            uniform sampler2D uTexture;
-
-            void main()
-            {
-                out_color = texture(uTexture, frag_texCoords);
-            }";
 
         //Vertex data, uploaded to the VBO.
         private readonly float[] _vertices =
@@ -139,48 +110,8 @@ namespace tmpl8rt_UU_CSharp {
                     gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint) (_indices.Length * sizeof(uint)), i, BufferUsageARB.StaticDraw); //Setting buffer data.
                 }
 
-                //Creating a vertex shader.
-                uint vertexShader = gl.CreateShader(ShaderType.VertexShader);
-                gl.ShaderSource(vertexShader, _vertexShaderSource);
-                gl.CompileShader(vertexShader);
-
-                //Checking the shader for compilation errors.
-                string infoLog = gl.GetShaderInfoLog(vertexShader);
-                if (!string.IsNullOrWhiteSpace(infoLog))
-                {
-                    Console.WriteLine($"Error compiling vertex shader {infoLog}");
-                }
-
-                //Creating a fragment shader.
-                uint fragmentShader = gl.CreateShader(ShaderType.FragmentShader);
-                gl.ShaderSource(fragmentShader, _fragmentShaderSource);
-                gl.CompileShader(fragmentShader);
-
-                //Checking the shader for compilation errors.
-                infoLog = gl.GetShaderInfoLog(fragmentShader);
-                if (!string.IsNullOrWhiteSpace(infoLog))
-                {
-                    Console.WriteLine($"Error compiling fragment shader {infoLog}");
-                }
-
-                //Combining the shaders under one shader program.
-                _shader = gl.CreateProgram();
-                gl.AttachShader(_shader, vertexShader);
-                gl.AttachShader(_shader, fragmentShader);
-                gl.LinkProgram(_shader);
-
-                //Checking the linking for errors.
-                gl.GetProgram(_shader, GLEnum.LinkStatus, out var status);
-                if (status == 0)
-                {
-                    Console.WriteLine($"Error linking shader {gl.GetProgramInfoLog(_shader)}");
-                }
-
-                //Delete the no longer useful individual shaders;
-                gl.DetachShader(_shader, vertexShader);
-                gl.DetachShader(_shader, fragmentShader);
-                gl.DeleteShader(vertexShader);
-                gl.DeleteShader(fragmentShader);
+                // Load our default shader
+                _shader = new Shader(gl, "assets/shaders/default.vert", "assets/shaders/default.frag");
 
                 // Set up our vertex attributes! These tell the vertex array (VAO) how to process the vertex data we defined
                 // earlier. Each vertex array contains attributes. 
@@ -232,10 +163,8 @@ namespace tmpl8rt_UU_CSharp {
                 // Generate mipmaps for this texture.
                 gl.GenerateMipmap(TextureTarget.Texture2D);
 
-                // Get our texture uniform, and set it to the texture location.
-                int location = gl.GetUniformLocation(_shader, "uTexture");
-                if (location != -1)
-                    gl.Uniform1(location, _texture);
+                // Set our texture uniform for the shader
+                _shader.SetUniform("uTexture", _texture);
 
                 // Blending setup remains the same
                 gl?.Enable(EnableCap.Blend);
@@ -286,12 +215,12 @@ namespace tmpl8rt_UU_CSharp {
                 gl?.BindTexture(TextureTarget.Texture2D, _texture);
                 
                 // Upload the buffer to the GPU
-                gl?.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba16f, (uint) Camera.WIDTH, 
-                    (uint) Camera.HEIGHT, 0, PixelFormat.Rgba, PixelType.Float, _bufferPtr);
+                gl?.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, (uint)Camera.WIDTH, 
+                  (uint)Camera.HEIGHT, PixelFormat.Rgba, PixelType.Float, _bufferPtr);
 
                 // Bind the geometry and shader and draw the quad, consisting of 2 triangles (6 vertices)
                 gl?.BindVertexArray(_vao);
-                gl?.UseProgram(_shader);
+                _shader?.Use();
                 gl?.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, (void*) 0);
 
                 // Let ImGUI show an FPS counter
@@ -321,6 +250,9 @@ namespace tmpl8rt_UU_CSharp {
                 // Dispose scene
                 _scene?.Dispose();
 
+                // Dispose shader
+                _shader?.Dispose();
+
                 // Dispose our controller first
                 controller?.Dispose();
 
@@ -332,7 +264,6 @@ namespace tmpl8rt_UU_CSharp {
                 gl?.DeleteBuffer(_ebo);
                 gl?.DeleteTexture(_texture);
                 gl?.DeleteVertexArray(_vao);
-                gl?.DeleteProgram(_shader);
 
                 // Unload OpenGL
                 gl?.Dispose();

@@ -5,7 +5,7 @@ using Silk.NET.Input;
 
 namespace tmpl8rt_UU_CSharp {
     public class Camera {
-        public const float SPEED = 0.5f;
+        public const float SPEED = 1.25f;
         public const int WIDTH = 1024;
         public const int HEIGHT = 640;
         public const float ASPECT_RATIO = (float)WIDTH / HEIGHT;

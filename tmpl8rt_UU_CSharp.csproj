@@ -18,11 +18,12 @@
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
     <ItemGroup>
-      <Content Include="assets\**">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+        <Content Include="assets\**\*">
+            <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
-    <Copy SourceFiles="@(Content)" DestinationFolder="$(OutDir)\assets\" />
+    <Copy SourceFiles="@(Content)" DestinationFiles="@(Content->'$(OutDir)\assets\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>

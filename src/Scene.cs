@@ -25,9 +25,9 @@ namespace tmpl8rt_UU_CSharp {
             Objects = new Primitive[10];
 
             // Create surfaces
-            Surface tilesSurface = new Surface("assets/tiles.jpg");
-            Surface wood1Surface = new Surface("assets/wood1.jpg");
-            Surface wood2Surface = new Surface("assets/wood2.jpg");
+            Surface tilesSurface = new Surface("assets/textures/tiles.jpg");
+            Surface wood1Surface = new Surface("assets/textures/wood1.jpg");
+            Surface wood2Surface = new Surface("assets/textures/wood2.jpg");
 
             // NOTE: For now we sort the objects on what order we want to render them
             // 1: Plane floor
