@@ -15,18 +15,18 @@ namespace tmpl8rt_UU_CSharp {
             InverseTransform = Matrix4X4.Invert(Transform, out var inv) ? inv : Matrix4X4<float>.Identity;
         }
 
-        public override bool Intersects(Ray ray)
+        public override bool Intersects(ref Ray ray)
         {
-            float Oy = InverseTransform.M21 * ray.Origin.X + InverseTransform.M22 * ray.Origin.Y + InverseTransform.M23 * ray.Origin.Z + InverseTransform.M24;
-            float Dy = InverseTransform.M21 * ray.Direction.X + InverseTransform.M22 * ray.Direction.Y + InverseTransform.M23 * ray.Direction.Z;
+            float Oy = InverseTransform.M12 * ray.Origin.X + InverseTransform.M22 * ray.Origin.Y + InverseTransform.M32 * ray.Origin.Z + InverseTransform.M42;
+            float Dy = InverseTransform.M12 * ray.Direction.X + InverseTransform.M22 * ray.Direction.Y + InverseTransform.M32 * ray.Direction.Z;
             float t = Oy / -Dy;
 
             if (t < ray.Distance && t > 0.0f)
             {
-                float Ox = InverseTransform.M11 * ray.Origin.X + InverseTransform.M12 * ray.Origin.Y + InverseTransform.M13 * ray.Origin.Z + InverseTransform.M14;
-                float Oz = InverseTransform.M31 * ray.Origin.X + InverseTransform.M32 * ray.Origin.Y + InverseTransform.M33 * ray.Origin.Z + InverseTransform.M34;
-                float Dx = InverseTransform.M11 * ray.Direction.X + InverseTransform.M12 * ray.Direction.Y + InverseTransform.M13 * ray.Direction.Z;
-                float Dz = InverseTransform.M31 * ray.Direction.X + InverseTransform.M32 * ray.Direction.Y + InverseTransform.M33 * ray.Direction.Z;
+                float Ox = InverseTransform.M11 * ray.Origin.X + InverseTransform.M21 * ray.Origin.Y + InverseTransform.M31 * ray.Origin.Z + InverseTransform.M41;
+                float Oz = InverseTransform.M13 * ray.Origin.X + InverseTransform.M23 * ray.Origin.Y + InverseTransform.M33 * ray.Origin.Z + InverseTransform.M43;
+                float Dx = InverseTransform.M11 * ray.Direction.X + InverseTransform.M21 * ray.Direction.Y + InverseTransform.M31 * ray.Direction.Z;
+                float Dz = InverseTransform.M13 * ray.Direction.X + InverseTransform.M23 * ray.Direction.Y + InverseTransform.M33 * ray.Direction.Z;
                 float Ix = Ox + t * Dx, Iz = Oz + t * Dz;
 
                 if (Ix > -Size && Ix < Size && Iz > -Size && Iz < Size)
@@ -41,16 +41,16 @@ namespace tmpl8rt_UU_CSharp {
 
         public override bool IsOccluded(Ray ray)
         {
-            float Oy = InverseTransform.M21 * ray.Origin.X + InverseTransform.M22 * ray.Origin.Y + InverseTransform.M23 * ray.Origin.Z + InverseTransform.M24;
-            float Dy = InverseTransform.M21 * ray.Direction.X + InverseTransform.M22 * ray.Direction.Y + InverseTransform.M23 * ray.Direction.Z;
+            float Oy = InverseTransform.M12 * ray.Origin.X + InverseTransform.M22 * ray.Origin.Y + InverseTransform.M32 * ray.Origin.Z + InverseTransform.M42;
+            float Dy = InverseTransform.M12 * ray.Direction.X + InverseTransform.M22 * ray.Direction.Y + InverseTransform.M32 * ray.Direction.Z;
             float t = Oy / -Dy;
 
             if (t < ray.Distance && t > 0.0f)
             {
-                float Ox = InverseTransform.M11 * ray.Origin.X + InverseTransform.M12 * ray.Origin.Y + InverseTransform.M13 * ray.Origin.Z + InverseTransform.M14;
-                float Oz = InverseTransform.M31 * ray.Origin.X + InverseTransform.M32 * ray.Origin.Y + InverseTransform.M33 * ray.Origin.Z + InverseTransform.M34;
-                float Dx = InverseTransform.M11 * ray.Direction.X + InverseTransform.M12 * ray.Direction.Y + InverseTransform.M13 * ray.Direction.Z;
-                float Dz = InverseTransform.M31 * ray.Direction.X + InverseTransform.M32 * ray.Direction.Y + InverseTransform.M33 * ray.Direction.Z;
+                float Ox = InverseTransform.M11 * ray.Origin.X + InverseTransform.M21 * ray.Origin.Y + InverseTransform.M31 * ray.Origin.Z + InverseTransform.M41;
+                float Oz = InverseTransform.M13 * ray.Origin.X + InverseTransform.M23 * ray.Origin.Y + InverseTransform.M33 * ray.Origin.Z + InverseTransform.M43;
+                float Dx = InverseTransform.M11 * ray.Direction.X + InverseTransform.M21 * ray.Direction.Y + InverseTransform.M31 * ray.Direction.Z;
+                float Dz = InverseTransform.M13 * ray.Direction.X + InverseTransform.M23 * ray.Direction.Y + InverseTransform.M33 * ray.Direction.Z;
                 float Ix = Ox + t * Dx, Iz = Oz + t * Dz;
 
                 return Ix > -Size && Ix < Size && Iz > -Size && Iz < Size;

@@ -25,7 +25,7 @@ namespace tmpl8rt_UU_CSharp {
                 Console.WriteLine("Failed to invert transform matrix");
         }
         
-        public override bool Intersects(Ray ray)
+        public override bool Intersects(ref Ray ray)
         {
             Vector3D<float> origin = Vector3D.Transform(ray.Origin, _inverseTransform);
             Vector3D<float> direction = Vector3D.TransformNormal(ray.Direction, _inverseTransform);

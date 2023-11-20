@@ -82,12 +82,12 @@ namespace tmpl8rt_UU_CSharp {
 
             // Get the intersection point
             Vector3D<float> intersectionPoint = ray.GetIntersectionPoint();
-            Vector3D<float> normal = scene.Objects[ray.LastHitID].GetNormal(intersectionPoint);
 
             // Return albedo for now
-            return scene.Objects[ray.LastHitID].GetAlbedo(intersectionPoint);
+            return scene.GetAlbedo(intersectionPoint, ray.LastHitID, ray.LastHitType);
 
             // Or visualize the normal: 
+            // Vector3D<float> normal = scene.GetNormal(intersectionPoint, ray.LastHitID, ray.LastHitType);
             // return new Vector4D<float>(normal.X, normal.Y, normal.Z, 1f);
 
             // Or visualize the distance: 

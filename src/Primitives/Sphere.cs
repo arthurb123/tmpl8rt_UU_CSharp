@@ -16,7 +16,7 @@ namespace tmpl8rt_UU_CSharp {
             _inversedRadius = 1.0f / radius;
         }
 
-        public override bool Intersects(Ray ray)
+        public override bool Intersects(ref Ray ray)
         {
             Vector3D<float> oc = ray.Origin - Center;
             float b = Vector3D.Dot(oc, ray.Direction);

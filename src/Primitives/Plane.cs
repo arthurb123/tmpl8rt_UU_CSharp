@@ -12,7 +12,7 @@ namespace tmpl8rt_UU_CSharp {
             Surface = surface;
         }
 
-        public override bool Intersects(Ray ray)
+        public override bool Intersects(ref Ray ray)
         {
             float t = -(Vector3D.Dot(ray.Origin, Normal) + Distance) / Vector3D.Dot(ray.Direction, Normal);
             if (t < ray.Distance && t > 0.0f) {

@@ -5,21 +5,13 @@ namespace tmpl8rt_UU_CSharp {
     public class Scene : IDisposable {
         public const float PI = 3.14159265358979323846264f;
 
-        public Quad[] Lights { get; private set; }
         public Primitive[] Objects { get; private set; }
+        public Quad[] Lights { get; private set; }
         public float AnimationTime { get; private set; }
 
         // Empty constructor generates the sample scene
         // from the assignment template
         public Scene() {
-            // 0: Four lights
-            Lights = new Quad[4] {
-                new Quad(id: 0, size: 0.5f),
-                new Quad(id: 0, size: 0.5f),
-                new Quad(id: 0, size: 0.5f),
-                new Quad(id: 0, size: 0.5f)
-            };
-
             // The sample scene holds a total of ten objects
             int objectId = 0;
             Objects = new Primitive[10];
@@ -57,6 +49,14 @@ namespace tmpl8rt_UU_CSharp {
                 transform: Matrix4X4.CreateRotationX(PI / 4) * Matrix4X4.CreateTranslation(new Vector3D<float>(-0.25f, 0, 2f))
             );
 
+            // 11-14: Four lights
+            int lightId = 0;
+            Lights = new Quad[4];
+            Lights[lightId++] = new Quad(id: 0, size: 0.5f, transform: Matrix4X4.CreateTranslation(new Vector3D<float>(-1f, 1.5f, -1f)));
+            Lights[lightId++] = new Quad(id: 1, size: 0.5f, transform: Matrix4X4.CreateTranslation(new Vector3D<float>(1f, 1.5f, -1f)));
+            Lights[lightId++] = new Quad(id: 2, size: 0.5f, transform: Matrix4X4.CreateTranslation(new Vector3D<float>(1f, 1.5f, 1f)));
+            Lights[lightId++] = new Quad(id: 3, size: 0.5f, transform: Matrix4X4.CreateTranslation(new Vector3D<float>(-1f, 1.5f, 1f)));
+
             // Set time to zero
             SetTime(0);
         }
@@ -64,20 +64,14 @@ namespace tmpl8rt_UU_CSharp {
         public void SetTime(float t) {
             AnimationTime = t;
 
-            // The four lights are stationary
-            Lights[0].SetTransform(Matrix4X4.CreateTranslation(new Vector3D<float>(-1f, 1.5f, -1f)));
-            Lights[1].SetTransform(Matrix4X4.CreateTranslation(new Vector3D<float>(1f, 1.5f, -1f)));
-            Lights[2].SetTransform(Matrix4X4.CreateTranslation(new Vector3D<float>(1f, 1.5f, 1f)));
-            Lights[3].SetTransform(Matrix4X4.CreateTranslation(new Vector3D<float>(-1f, 1.5f, 1f)));
-
-            // Make the cube spin (remember, the cube is object id 3, therefore at index 2)
+            // Make the cube spin
             Matrix4X4<float> M2base = Matrix4X4.CreateRotationZ(PI / 4) * Matrix4X4.CreateRotationX(PI / 4);
             Matrix4X4<float> M2 =  M2base * Matrix4X4.CreateRotationY(t * 0.5f) * Matrix4X4.CreateTranslation<float>(new Vector3D<float>(1.8f, 0f, 2.5f));
             ((Cube)Objects[8]).SetTransform(M2);
 
             // Make the sphere bounce, such that the tm value
             // is clamped between 0 and 1 and then back to 0
-            float tm = t % 2f;
+            float tm = 1 - (float)Math.Pow(AnimationTime % 2.0f - 1, 2);
             if (tm > 1f) {
                 tm = 2f - tm;
             }
@@ -87,7 +81,7 @@ namespace tmpl8rt_UU_CSharp {
 
         public Vector3D<float> RandomPointOnLight(float r0, float r1) {
             // Select a random light and use that
-            int lightID = (int)(r0 * 4f);
+            int lightID = (int)(r0 * Lights.Length);
             Quad light = Lights[lightID];
 
             // Renormalize r0 for reuse
@@ -103,14 +97,38 @@ namespace tmpl8rt_UU_CSharp {
         }
 
         public void EvaluateRay(Ray ray) {
-            // Check for intersections
-            foreach (Primitive obj in Objects)
-                obj.Intersects(ray);
+            // NOTE: This is extremely inefficient, we now loop over all
+            //       objects but we should definitely use some kind of sorting
+            //       method here (e.g: bounding boxes)
+
+            foreach (Primitive obj in Objects) 
+                if (obj.Intersects(ref ray))
+                    ray.RegisterHitType(HitType.Object);
+
+            foreach (Quad light in Lights) 
+                if (light.Intersects(ref ray))
+                    ray.RegisterHitType(HitType.Light);
+        }
+
+        public Vector4D<float> GetAlbedo(Vector3D<float> intersectionPoint, int id, HitType hitType) {
+            if (hitType == HitType.Object)
+                return Objects[id].GetAlbedo(intersectionPoint);
+            else if (hitType == HitType.Light)
+                return Lights[id].GetAlbedo(intersectionPoint);
+            else
+                return Vector4D<float>.Zero;
+        }
+
+        public Vector3D<float> GetNormal(Vector3D<float> intersectionPoint, int id, HitType hitType) {
+            if (hitType == HitType.Object)
+                return Objects[id].GetNormal(intersectionPoint);
+            else if (hitType == HitType.Light)
+                return Lights[id].GetNormal(intersectionPoint);
+            else
+                return Vector3D<float>.Zero;
         }
 
         public void Dispose() {
-            foreach (Quad light in Lights) 
-                light.Dispose();
             foreach (Primitive obj in Objects) 
                 obj.Dispose();
         }

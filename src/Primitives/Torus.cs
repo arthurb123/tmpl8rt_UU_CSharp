@@ -23,7 +23,7 @@ namespace tmpl8rt_UU_CSharp {
             }
         }
 
-        public override bool Intersects(Ray ray)
+        public override bool Intersects(ref Ray ray)
         {
             // Via: https://www.shadertoy.com/view/4sBGDy
             Vector3D<float> O = Vector3D.Transform(ray.Origin, _inverseTransform);
